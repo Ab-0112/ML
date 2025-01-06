@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abhishek Murali | Portfolio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Raleway:wght@300;700&display=swap" rel="stylesheet">
+    <style>
+        /* General Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(to bottom, #f9f9f9, #ffffff);
+        }
+
+        /* Navbar */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+        }
+
+        .navbar ul {
+            display: flex;
+            list-style: none;
+        }
+
+        .navbar ul li {
+            margin-left: 20px;
+        }
+
+        .navbar ul li a {
+            text-decoration: none;
+            color: white;
+            font-weight: bold;
+        }
+
+        .navbar ul li a:hover {
+            color: #ffcc00;
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            background: linear-gradient(to right, #0077cc, #003366), url('images/hero-bg.jpg') no-repeat center center/cover;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 0 20px;
+            animation: fadeIn 2s;
+        }
+
+        .hero h1 span {
+            color: #ffcc00;
+        }
+
+        .btn {
+            display: inline-block;
+            background: #ffcc00;
+            color: #333;
+            padding: 10px 20px;
+            text-decoration: none;
+            margin-top: 20px;
+            border-radius: 5px;
+        }
+
+        .btn:hover {
+            background: #333;
+            color: white;
+        }
+
+        /* Section Layout */
+        .section {
+            padding: 100px 20px;
+            text-align: center;
+        }
+
+        h2 {
+            color: #0077cc;
+            margin-bottom: 20px;
+        }
+
+        /* About Section */
+        .about-content {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            animation: slideIn 1.5s;
+        }
+
+        /* Skills Section */
+        .skills-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            list-style: none;
+            padding: 0;
+        }
+
+        .skills-list li {
+            background: #f4f4f4;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Projects Grid */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .project {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            transition: transform 0.3s;
+        }
+
+        .project:hover {
+            transform: translateY(-10px);
+        }
+
+        .project img {
+            width: 100%;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        /* Achievements Section */
+        .achievements-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .achievements-list li {
+            margin: 10px 0;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Footer */
+        .footer {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <h1 class="logo">Abhishek Murali</h1>
+        <ul>
+            <li><a href="#home">Home</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#skills">Skills</a></li>
+            <li><a href="#projects">Projects</a></li>
+            <li><a href="#achievements">Achievements</a></li>
+            <li><a href="Black and White Simple Infographic Resume.pdf"> Resume</a></li>
+            <li><a href="#contact">Contact</a></li>
+        </ul>
+    </nav>
+
+    <!-- Hero Section -->
+    <header id="home" class="hero">
+        <div class="hero-content">
+            <h1>Hi, I'm <span>Abhishek Murali</span></h1>
+            <p>Aspiring Machine Learning Engineer passionate about data-driven solutions.</p>
+            <a href="#about" class="btn">Discover More</a>
+        </div>
+    </header>
+
+    <!-- About Section -->
+    <section id="about" class="section about">
+        <div class="about-content">
+            <div>
+                <h2>About Me</h2>
+                <p>
+                    Enthusiastic and detail-oriented fresher with a solid foundation in computer applications and a passion for Machine Learning and Data Analysis. Proficient in Python, SQL, and data visualization tools like Tableau. Completed academic projects including real estate price prediction and student performance analysis, showcasing strong analytical and problem-solving skills. Adept at leveraging machine learning models to drive actionable insights and deliver impactful solutions. Eager to contribute to innovative projects and continuously enhance technical expertise in a professional environment.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Skills Section -->
+    <section id="skills" class="section skills">
+        <h2>Technical Skills</h2>
+        <ul class="skills-list">
+            <li>Python</li>
+            <li>SQL</li>
+            <li>Pandas, NumPy</li>
+            <li>Scikit-learn, Matplotlib, Seaborn</li>
+            <li>Tableau</li>
+            <li>Decision Trees, Clustering</li>
+        </ul>
+    </section>
+
+    <!-- Projects Section -->
+    <section id="projects" class="section projects">
+        <h2>Projects</h2>
+        <div class="projects-grid">
+            <div class="project">
+                <img src="vector-real-estate-for-sale.jpg" alt="Real Estate Price Prediction">
+                <h3>Real Estate Price Prediction</h3>
+                <p>Developed a Python regression model for accurate real estate price predictions.</p>
+            </div>
+            
+            <div class="project">
+                <img src="download.jpeg" alt="Student Performance Analysis">
+                <h3>Student Performance Analysis</h3>
+                <p>Built a machine learning model to analyze and predict student outcomes with dashboards.</p>
+            </div>
+            
+            <div class="project">
+                <img src="istockphoto-1445441629-612x612.jpg" alt="Educational Enrolment Analysis">
+                <h3>Educational Enrolment Analysis</h3>
+                <p>Analyzed state-wise enrolment data using Tableau to provide actionable insights for policymakers.</p>
+            </div>
+            
+            <div class="project">
+                <img src="digital-rupee-icon-einr-line-260nw-2258607261.webp" alt="RBI Dataset Analysis">
+                <h3>RBI Dataset Analysis</h3>
+                <p>Explored ATM infrastructure data and visualized it using Tableau for strategic planning and resource allocation.</p>
+            </div>
+            
+        </div>
+    </section>
+
+    <!-- Achievements Section -->
+    <section id="achievements" class="section achievements">
+        <h2>Key Achievements</h2>
+        <ul class="achievements-list">
+            <li>Published research on regression models for real estate price prediction, benefiting stakeholders.</li>
+            <li>Participated in a Kaggle competition, developing a housing price prediction model.</li>
+        </ul>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="section contact">
+        <h2>Contact</h2>
+        <p><strong>Email:</strong> venkatakrishnanabhi2001@gmail.com</p>
+        <p><strong>Phone:</strong> +91 86867233682</p>
+        <p><strong>LinkedIn:</strong> <a href="#">LinkedIn Profile</a></p>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2025 Abhishek Murali. All Rights Reserved.</p>
+    </footer>
+
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>
