@@ -1,0 +1,31 @@
+After categorizing and sorting the cities based on their population, here is the list:
+
+**Tier 1: Over 10 million population**
+
+• Mumbai
+• Delhi
+• Bengaluru (Bangalore)
+• Chennai
+• Hyderabad
+• Kolkata
+• Surat
+
+**Tier 2: 5-10 million population**
+
+• Ahmedabad
+• Nagpur
+• Lucknow
+• Kanpur
+• Indore
+• Ghaziabad
+• Vadodara
+• Visakhapatnam
+• Patna
+• Thane
+
+**Tier 3: 1-5 million population**
+
+• Pune
+• Jaipur
+• Bhopal
+• Pimpri-Chinchwad
