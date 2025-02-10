@@ -1,0 +1,32 @@
+# Job Description
+#Job Title:
+Full Stack Development Intern
+
+#Skills Required:
+Expertise in HTML, CSS, JavaScript, and React
+Understanding of back-end development concepts
+Ability to produce demonstrable projects showcasing proficiency in React (with a portfolio of code on GitHub)
+Familiarity with preferred technologies:
+- MERN Stack (MongoDB, Express.js, React, Node.js)
+- JavaScript and TypeScript
+- Tailwind CSS
+- PostgreSQL
+- Express.js & NestJS
+- Prisma ORM
+- AWS Concepts (EC2, Object Storage)
+
+# Company Description
+#Company Name:
+Inlustro
+
+#Company Description:
+Inlustro is an EdTech company dedicated to bridging the gap between academia and industry. 
+Its mission is to enable colleges to achieve academic excellence, propel students toward unparalleled success, and catalyze corporate growth through groundbreaking innovation.
+
+The company has successfully:
+- Developed 20+ college partnerships
+- Impacted 20,000+ students
+- Built a robust enterprise business with a client base of 50+ organizations across the nation
+
+#Domain:
+Education Technology (EdTech)

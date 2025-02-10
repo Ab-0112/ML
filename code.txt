@@ -1,0 +1,197 @@
+from flask import Flask
+from flask_socketio import SocketIO, emit
+from langchain_ollama import OllamaEmbeddings
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_community.vectorstores import Chroma
+from langchain.prompts import ChatPromptTemplate
+from langchain_ollama.chat_models import ChatOllama
+from langchain_core.runnables import RunnablePassthrough
+from langchain_core.output_parsers import StrOutputParser
+from langchain.retrievers.multi_query import MultiQueryRetriever
+from langchain.docstore.document import Document
+import os
+import logging
+import subprocess
+import time
+
+# Initialize Flask and SocketIO
+app = Flask(__name__)
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode="eventlet")
+
+logging.basicConfig(level=logging.INFO)
+
+# Global variables
+vector_db = None
+task_chain = None
+DESCRIPTIONS_FILE = 'description.txt'
+
+def extract_descriptions(file_path):
+    """Extracts job and company descriptions from a file."""
+    if not os.path.exists(file_path):
+        return {"error": "Error: File not found!"}
+
+    with open(file_path, "r") as file:
+        content = file.read().strip()
+
+    job_marker = "# Job Description"
+    company_marker = "# Company Description"
+
+    job_start_index = content.find(job_marker)
+    company_start_index = content.find(company_marker)
+
+    if job_start_index == -1 or company_start_index == -1:
+        return {"error": "Error: Missing job or company description markers."}
+
+    job_description = content[job_start_index + len(job_marker):company_start_index].strip()
+    company_description = content[company_start_index + len(company_marker):].strip()
+
+    return {"job_description": job_description, "company_description": company_description}
+
+def ensure_model_available(model_name):
+    """Ensures Ollama model is available."""
+    try:
+        logging.info(f"Checking model availability: {model_name}")
+        subprocess.run(["ollama", "pull", model_name], check=True)
+        logging.info(f"Model '{model_name}' is ready.")
+    except subprocess.CalledProcessError:
+        logging.error(f"Failed to pull model '{model_name}'. Ensure Ollama is running.")
+        raise RuntimeError(f"Model '{model_name}' not available. Please start Ollama.")
+
+def initialize_task_chain():
+    """Initializes the RAG pipeline for task generation."""
+    global vector_db, task_chain
+
+    descriptions = extract_descriptions(DESCRIPTIONS_FILE)
+    if "error" in descriptions:
+        logging.error(descriptions["error"])
+        return False
+
+    job_description = descriptions["job_description"]
+    company_description = descriptions["company_description"]
+
+    ensure_model_available("nomic-embed-text")
+
+    documents = [Document(page_content=job_description)]
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1200, chunk_overlap=100)
+    chunks = text_splitter.split_documents(documents)
+
+    vector_db = Chroma.from_documents(
+        documents=chunks,
+        embedding=OllamaEmbeddings(model="nomic-embed-text"),
+        collection_name="tasks-collection",
+    )
+
+    task_prompt = ChatPromptTemplate.from_template(
+    f"""
+    You are an AI assistant tasked with creating real-world, scenario-based interview tasks for a specific job role. 
+    Generate realistic tasks that require essential job skills, using only tools, datasets, or platforms that would be found in a typical working environment—no tutorials or guides. 
+    The focus is on **actionable resources** that candidates would realistically use in their job.
+
+    Job Description:
+    {job_description}
+
+    Company Description:
+    {company_description}
+
+    Generate **6-10 tasks** with the following details:
+    - **Task Title**: A concise and descriptive title.
+    - **Scenario/Context**: A practical, real-world scenario or problem the candidate would likely face on the job.
+    - **Objective**: The skill or competency being tested (e.g., data analysis, coding, project management).
+    - **Task Description**: Clear, actionable instructions for the candidate. The task should be realistic and achievable using the provided resources.
+    - **Resources**: Tools, platforms, or data needed to complete the task (e.g., access to a specific software, dataset, or an online platform). Do not include links to documentation or tutorials.
+    - **Estimated Time**: The time required to complete the task (≤ 60 minutes).
+    - **Evaluation Criteria**: How the task will be evaluated (e.g., correctness of results, creativity in solution).
+
+    Focus on ensuring the resources are things the candidate can **actively use** in their role, like tools or live data (e.g., a marketing analytics dashboard, a coding environment, or a real-time customer support query system). 
+    Do **not** include resources such as guides or documentation.
+    """)
+
+    retriever = MultiQueryRetriever.from_llm(
+        vector_db.as_retriever(),
+        ChatOllama(model="llama3.2:1b"),
+        prompt=task_prompt
+    )
+
+    task_chain = (
+        {"context": retriever, "question": RunnablePassthrough()}
+        | task_prompt
+        | ChatOllama(model="llama3.2:1b", streaming=True)
+        | StrOutputParser()
+    )
+
+    logging.info("✅ Task chain successfully initialized.")
+    return True
+
+# =========================== SOCKET.IO EVENTS =========================== #
+@socketio.on('connect')
+def handle_connect():
+    """Handles client WebSocket connection."""
+    logging.info("✅ Client connected via WebSocket.")
+    emit('message', {'data': 'Connected to WebSocket server!'})
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    """Handles client WebSocket disconnection."""
+    logging.info("❌ Client disconnected.")
+
+@socketio.on('initialize')
+def handle_initialize():
+    """Manually initializes task chain on WebSocket request."""
+    try:
+        success = initialize_task_chain()
+        if success:
+            emit('message', {'data': "✅ Task chain initialized successfully!"})
+        else:
+            emit('message', {'data': "🚨 Initialization failed! Check logs."})
+    except Exception as e:
+        logging.error(f"Error initializing task chain: {e}")
+        emit('message', {'data': f"🚨 Initialization failed: {str(e)}"})
+
+@socketio.on('generate_task')
+def handle_generate_task(data):
+    """Generates tasks and streams each sentence to the client in real-time."""
+    try:
+        if task_chain is None:
+            emit('message', {'data': '❌ Task chain is not initialized!'})
+            return
+
+        query = data.get('message', '').strip()
+        if not query:
+            emit('message', {'data': '⚠️ Error: Query is empty!'})
+            return
+
+        logging.info(f"⚡ Generating tasks for: {query}")
+        emit('message', {'data': '🔄 Generating tasks...'}, broadcast=True)
+
+        start_time = time.time()
+
+        # Ensure the response is streamed to the frontend
+        response_text = task_chain.invoke({"question": query})
+        sentences = response_text.split(". ")
+
+        for sentence in sentences:
+            sentence = sentence.strip()
+            if sentence:
+                logging.info(f"📢 Sending sentence: {sentence}")
+                emit('message', {'data': sentence + "."}, broadcast=True)
+                socketio.sleep(0.1)  # Allow time for UI to update
+
+        elapsed_time = time.time() - start_time
+        logging.info(f"✅ Task generation completed in {elapsed_time:.2f} seconds")
+
+    except Exception as e:
+        logging.error(f"🚨 Task generation failed: {e}")
+        emit('message', {'data': f"Error: {str(e)}"}, broadcast=True)
+
+
+# =========================== SERVER START =========================== #
+if __name__ == '__main__':
+    logging.info("⚡ Starting WebSocket server...")
+
+    # **Ensure task chain is initialized on startup**
+    if initialize_task_chain():
+        logging.info("✅ Task chain initialized at startup!")
+    else:
+        logging.error("🚨 Task chain initialization failed at startup!")
+
+    socketio.run(app, host='0.0.0.0', port=5000, debug=True, allow_unsafe_werkzeug=True)

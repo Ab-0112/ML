@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Generator UI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+            padding: 20px;
+        }
+        h2 {
+            color: #333;
+        }
+        #messages {
+        width: 90%;  /* Increase width */
+        height: 500px;  /* Increase height */
+        overflow-y: auto;
+        background: white;
+        border: 1px solid #ccc;
+        margin: 20px auto;
+        padding: 15px;
+        text-align: left;
+        box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+        font-size: 16px; /* Bigger text for readability */
+        white-space: pre-wrap; /* Preserve formatting */
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+        }
+        #connectBtn {
+            background-color: #28a745;
+            color: white;
+        }
+        #generateBtn {
+            background-color: #007bff;
+            color: white;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Task Generator</h2>
+    <button id="connectBtn">Connect to Server</button>
+    <button id="generateBtn" disabled>Generate Tasks</button>
+
+    <div id="messages">Waiting for connection...</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+    <script>
+        let socket;
+
+        document.getElementById('connectBtn').addEventListener('click', function () {
+            if (!socket || !socket.connected) {
+                socket = io('http://localhost:5000', {
+                    reconnectionAttempts: 5,  // Limit reconnection attempts
+                    timeout: 5000  // Set timeout for connection attempt
+                });
+
+                // ✅ Debugging: Log all incoming events
+                socket.onAny((event, data) => {
+                    console.log(`📩 Event received: ${event}`, data);
+                });
+
+                socket.on('connect', function () {
+                    console.log("✅ Connected to server");
+                    document.getElementById('messages').innerHTML += "<p>✅ Connected to server</p>";
+                    document.getElementById('generateBtn').disabled = false;
+                });
+
+                socket.on('message', function (data) {
+                    console.log("📩 Received message:", data);
+                    const messagesDiv = document.getElementById('messages');
+                    const newMessage = document.createElement('p');
+                    newMessage.textContent = data.data;
+                    messagesDiv.appendChild(newMessage);
+                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                });
+
+                socket.on('task_completion', function (data) {
+                    console.log("✅ Task generation completed:", data);
+                    document.getElementById('messages').innerHTML += `<p>✅ Task generation completed in ${data.elapsed_time.toFixed(2)} seconds</p>`;
+                });
+
+                socket.on('disconnect', function () {
+                    console.warn("⚠️ WebSocket disconnected! Attempting to reconnect...");
+                    setTimeout(() => {
+                        if (!socket.connected) {
+                            socket.connect();
+                        }
+                    }, 2000);
+                });
+
+                socket.on('connect_error', function (error) {
+                    console.error("❌ WebSocket connection error:", error);
+                });
+
+                socket.on('reconnect_attempt', function (attempt) {
+                    console.log(`🔄 Reconnection attempt #${attempt}`);
+                });
+
+                socket.on('reconnect_failed', function () {
+                    console.error("🚨 Reconnection failed. Please check the server.");
+                });
+            }
+        });
+
+        document.getElementById('generateBtn').addEventListener('click', function () {
+            if (socket && socket.connected) {
+                console.log("🔄 Requesting task generation...");
+                document.getElementById('messages').innerHTML += "<p>⏳ Requesting task generation...</p>";
+                socket.emit('generate_task');
+            } else {
+                console.error("❌ WebSocket is not connected!");
+            }
+        });
+    </script>
+
+</body>
+</html>
